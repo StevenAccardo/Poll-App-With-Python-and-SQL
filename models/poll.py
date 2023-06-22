@@ -1,5 +1,6 @@
 import database
-from models import Option
+from connections import create_connection
+from models.option import Option
 
 class Poll:
     def __init__(self, title: str, owner: str, _id: int = None):
@@ -8,7 +9,7 @@ class Poll:
         self.owner = owner
 
     # Short for represent. Used to show what the object would look like in a string format
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Poll({self.title!r}, {self.owner!r}, {self.id!r})"
     
     def save(self):
@@ -39,7 +40,7 @@ class Poll:
     @classmethod
     def all(cls) -> list["Poll"]:
         connection = create_connection()
-        polls = database.get_poll(connection)
+        polls = database.get_polls(connection)
         connection.close()
         
         return [cls(poll[1], poll[2], poll[0]) for poll in polls]
