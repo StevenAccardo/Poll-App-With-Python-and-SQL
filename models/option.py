@@ -1,3 +1,5 @@
+import datetime
+import pytz
 import database
 from connection_pool import get_connection
 
@@ -18,7 +20,11 @@ class Option:
 
     def vote(self, username: str):
         with get_connection() as connection:
-            database.add_poll_vote(connection, username, self.id)
+            # Creates a datetime object. Converts the computers current naïve datetime object into an aware datetime object set to UTC time.
+            current_datetime_utc = datetime.datetime.now(tz=pytz.utc)
+            # Converts the aware datetime object set to UTC into an epoch timestamp to be stored in the database.
+            current_timestamp = current_datetime_utc.timestamp()
+            database.add_poll_vote(connection, username, current_timestamp, self.id)
 
     @classmethod
     def get(cls, option_id: int) -> "Option":

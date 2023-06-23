@@ -1,4 +1,6 @@
 import random
+import datetime
+import pytz
 
 import database
 from models.poll import Poll
@@ -50,6 +52,20 @@ def _print_poll_options(options: list[Option]) -> None:
     for option in options:
         print(f"{option.id}: {option.text}")
 
+def _print_votes_for_options(options: list[Option]) -> None:
+    for option in options:
+        print(f"-- {option.text} --")
+        for vote in option.votes:
+            # Takes the epoch/unix/posix timestamp that was stored in the database and converts it to a naive UTC datetime object (if we don't use the utcfromtimestamp method, then the datetime object will be converted to a naive local datetime vs naive UTC datetime).
+            naive_datetime = datetime.datetime.utcfromtimestamp(vote[2])
+            # Converts the naive datetime object to an aware datetime object set to a UTC timezone.
+            utc_datetime = pytz.utc.localize(naive_datetime)
+            # Adjusts the aware UTC datetime object to an aware datetime object set to the hard-coded PST timezone.
+            local_datetime = utc_datetime.astimezone(pytz.timezone("US/Pacific"))
+            # Converts the aware datetime object to a string in the desired format.
+            local_datetime_str = local_datetime.strftime("%m-%d-%Y %H:%M")
+            print(f"\t- {vote[0]} on {local_datetime_str}")
+
 
 def show_poll_votes() -> None:
     poll_id = int(input("Enter poll you would like to see votes for: "))
@@ -63,6 +79,11 @@ def show_poll_votes() -> None:
             print(f"{option.text} got {votes} votes ({percentage:.2f}% of total)")
     except ZeroDivisionError:
         print("No votes cast for this poll yet.")
+
+    vote_log = input("Would you like to see the vote log? (y/N) ")
+
+    if vote_log == "y":
+        _print_votes_for_options(options)
 
 
 def randomize_poll_winner() -> None:

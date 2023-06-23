@@ -17,7 +17,7 @@ CREATE_OPTIONS = """CREATE TABLE IF NOT EXISTS options
 
 # Creates a votes table if it doesn't already exist with an username column and an option_id column which is a foreign key that references the primary key of the id column in the options table.
 CREATE_VOTES = """CREATE TABLE IF NOT EXISTS votes
-(username TEXT, option_id INTEGER, FOREIGN KEY(option_id) REFERENCES options (id));"""
+(username TEXT, option_id INTEGER, vote_timestamp INTEGER, FOREIGN KEY(option_id) REFERENCES options (id));"""
 
 #
 SELECT_POLL = "SELECT * FROM polls WHERE id = %s;"
@@ -44,7 +44,7 @@ INSERT_POLL_RETURN_ID = "INSERT INTO polls (title, owner_username) VALUES (%s, %
 INSERT_OPTION_RETURN_ID = "INSERT INTO options (option_text, poll_id) VALUES (%s, %s) RETURNING id;"
 
 # Inserts a new vote record into the votes tab
-INSERT_VOTE = "INSERT INTO votes (username, option_id) VALUES (%s, %s);"
+INSERT_VOTE = "INSERT INTO votes (username, option_id, vote_timestamp) VALUES (%s, %s, %s);"
 
 @contextmanager
 def get_cursor(connection):
@@ -117,6 +117,6 @@ def get_votes_for_option(connection, option_id: int) -> list[Vote]:
 
         return cursor.fetchall()
 
-def add_poll_vote(connection, username: str, option_id: int):
+def add_poll_vote(connection, username: str, vote_timestamp: float, option_id: int):
     with get_cursor(connection) as cursor:
-        cursor.execute(INSERT_VOTE, (username, option_id))
+        cursor.execute(INSERT_VOTE, (username, option_id, vote_timestamp))
