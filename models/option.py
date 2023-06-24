@@ -39,4 +39,11 @@ class Option:
             votes = database.get_votes_for_option(connection, self.id)
 
             return votes
+        
+    @property
+    def vote_count(self) -> int:
+        with get_connection() as connection:
+            votes = database.get_votes_for_option(connection, self.id)
+            
+            return len(votes) if votes else 0
     
